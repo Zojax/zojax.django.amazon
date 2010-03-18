@@ -59,7 +59,6 @@ class BookAdminForm(ModelForm):
         return self.cleaned_data
         
     def save(self, commit=True):
-        raise Exception()
         instance = super(BookAdminForm, self).save(commit)
         Category.objects.update_categories(instance, self.cleaned_data['categories'])
         return instance
