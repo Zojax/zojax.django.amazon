@@ -2,6 +2,8 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from zojax.django.contentitem.models import ContentItem
 from zojax.django.categories import register
+import urllib2
+from zojax.django.amazon.settings import AMAZON_ASSOCIATE_TAG
 
 
 class AmazonItem(ContentItem):
@@ -32,6 +34,14 @@ class Book(AmazonItem):
         verbose_name = _(u"Book")
         verbose_name_plural = _(u"Books")
         
+    @property
+    def author_search_url(self):
+        if not self.author:
+            return None
+        search_url = "http://www.amazon.com/s?ie=UTF8&sort=relevancerank&search-alias=books&ref_=ntt_at_ep_srch&field-author=%s" % urllib2.quote(self.author)
+        if AMAZON_ASSOCIATE_TAG:
+            search_url = "http://www.amazon.com/gp/redirect.html?ie=UTF8&location=%s&tag=%s&linkCode=ur2" % (urllib2.quote(search_url), urllib2.quote(AMAZON_ASSOCIATE_TAG))
+        return search_url
         
 register(Book)
         
