@@ -17,9 +17,8 @@ class AmazonItem(ContentItem):
     
     url = models.URLField(max_length=300, unique=True)
     
-    @property
-    def associate_url(self):
-        return self.url
+    def get_absolute_url(self):
+        return self.url 
     
     class Meta:
         abstract = True
