@@ -1,9 +1,10 @@
 from django.db import models
+from django.db.models import permalink
 from django.utils.translation import ugettext_lazy as _
-from zojax.django.contentitem.models import ContentItem
-from zojax.django.categories import register
-import urllib2
 from zojax.django.amazon.settings import AMAZON_ASSOCIATE_TAG
+from zojax.django.categories import register
+from zojax.django.contentitem.models import ContentItem
+import urllib2
 
 
 class AmazonItem(ContentItem):
@@ -41,6 +42,10 @@ class Book(AmazonItem):
         if AMAZON_ASSOCIATE_TAG:
             search_url = "http://www.amazon.com/gp/redirect.html?ie=UTF8&location=%s&tag=%s&linkCode=ur2" % (urllib2.quote(search_url), urllib2.quote(AMAZON_ASSOCIATE_TAG))
         return search_url
+
+    @permalink
+    def get_absolute_url(self):
+        return ('view_book', (self.id, self.slug)) 
         
 register(Book)
         
