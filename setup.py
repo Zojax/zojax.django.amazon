@@ -30,6 +30,7 @@ setup(name='zojax.django.amazon',
           'zojax.django.contentitem',
           'zojax.django.categories',
           'python-amazon-product-api',
+          'django-selector',
           # -*- Extra requirements: -*-
       ],
       entry_points="""
