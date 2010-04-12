@@ -1,7 +1,8 @@
+from amazonproduct import InvalidParameterValue
 from zojax.django.amazon.settings import AMAZON_ACCESS_KEY, AMAZON_SECRET_KEY, \
     AMAZON_LOCALE, AMAZON_ASSOCIATE_TAG
 import amazonproduct
-from amazonproduct import InvalidParameterValue
+import urllib
 
 
 class ConfigurationError(Exception):
@@ -30,7 +31,7 @@ def get_book_data(amazon_id):
     data = {}
     if item.ItemAttributes.ProductGroup != 'Book':
         raise Exception("This amazon ID does not refer to book product.")
-    data['url'] = unicode(item.DetailPageURL)
+    data['url'] = urllib.unquote(unicode(item.DetailPageURL))
     data['title'] = unicode(item.ItemAttributes.Title)
     for r in item.EditorialReviews.EditorialReview:
         if r.Source == 'Product Description':
