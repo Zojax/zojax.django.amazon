@@ -8,9 +8,9 @@ def view_book(request, id, slug):
     try:
         book = Book.objects.get(pk=int(id))
     except Book.DoesNotExist:
-        return Http404()
+        raise Http404()
     if not book.published:
-        return Http404()
+        raise Http404()
     if book.slug != slug:
         return HttpResponsePermanentRedirect(book.get_absolute_url())
     return render_to_response("amazon/book.html", {'book': book},
