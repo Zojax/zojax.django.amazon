@@ -1,34 +1,37 @@
 from django.contrib import admin
-from django.utils.translation import ugettext_lazy as _, ungettext_lazy
-from zojax.django.amazon.forms import BookAdminForm, BookAddForm
-from zojax.django.amazon.models import Book
-from django.views.decorators.csrf import csrf_protect
-from django.db import transaction
 from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.utils.encoding import force_unicode
+from django.utils.translation import ugettext_lazy as _, ungettext_lazy
+from django.views.decorators.csrf import csrf_protect
+from zojax.django.amazon.forms import BookAdminForm, BookAddForm, \
+    BookSearchAdminForm
+from zojax.django.amazon.models import Book, BookSearch
+from zojax.django.categories.models import Category
+from zojax.django.location.models import LocatedItem
 
 
 class BookAdmin(admin.ModelAdmin):
 
     form = BookAdminForm
     
-    list_display = ('title', 'author', 'amazon_id', 'published')
-    list_editable = ('published',)
-    list_filter = ('published', )
+    list_display = ('amazon_id', 'title', 'author', 'published')
+    list_editable = ('title', 'published',)
+    list_filter = ('published',)
     
-    search_fields = ('title', 'author', 'amazon_id', )
+    search_fields = ('title', 'author', 'amazon_id',)
     
     fieldsets = (
             (None, {
                 'classes': ('categories',),
-                'fields': ('categories', )
+                'fields': ('categories',)
             }),
             (None, {
                 'fields': ('amazon_id', 'url', 'title', 'author', 'description',
                            'small_image_url', 'medium_image_url', 'large_image_url',
-                           'published', )
+                           'published',)
             }),
         )
 
@@ -83,4 +86,42 @@ class BookAdmin(admin.ModelAdmin):
         return render_to_response("admin/amazon/book/add.html", context,
                                   context_instance=RequestContext(request))
 
+
+class BookSearchAdmin(admin.ModelAdmin):
+    
+    form = BookSearchAdminForm
+
+    def save_model(self, request, obj, form, change):
+        super(BookSearchAdmin, self).save_model(request, obj, form, change)
+        Category.objects.update_categories(obj, form.cleaned_data['categories'])
+        LocatedItem.objects.update(obj, form.cleaned_data['location'])
+        
+    fieldsets = (
+            (None, {
+                'classes': ('categories',),
+                'fields': ('categories',)
+            }),
+            (None, {
+                'classes': ('location',),
+                'fields': ('location',)
+            }),
+            (None, {
+                'fields': ('keywords', 'browse_node',)
+            }),
+        )
+
+    def fetch(self, request, queryset):
+        cnt = 0
+        for search in queryset:
+            cnt += search.fetch()
+        self.message_user(request,
+                          ungettext_lazy(u"%(count)d book was fetched",
+                                         u"%(count)d books were fetched", cnt) 
+                          % {'count': cnt})
+    fetch.short_description = _(u"Harvest selected searches")
+
+    actions = ['fetch']    
+
+
 admin.site.register(Book, BookAdmin)
+admin.site.register(BookSearch, BookSearchAdmin)

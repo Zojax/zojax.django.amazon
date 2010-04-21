@@ -1,10 +1,15 @@
 from django.db import models
 from django.db.models import permalink
 from django.utils.translation import ugettext_lazy as _
-from zojax.django.amazon.settings import AMAZON_ASSOCIATE_TAG
+from zojax.django.amazon.settings import AMAZON_ASSOCIATE_TAG, AMAZON_ACCESS_KEY, \
+    AMAZON_SECRET_KEY, AMAZON_LOCALE
 from zojax.django.categories import register
 from zojax.django.contentitem.models import ContentItem
+import amazonproduct
 import urllib2
+from django.utils.hashcompat import md5_constructor
+from zojax.django.amazon.utils import get_book_data
+from zojax.django.categories.models import Category
 
 
 class AmazonItem(ContentItem):
@@ -48,4 +53,51 @@ class Book(AmazonItem):
         return ('view_book', (self.id, self.slug)) 
         
 register(Book)
+
+
+class BookSearch(models.Model):
+
+    keywords = models.CharField(max_length=100)
+    browse_node = models.IntegerField(null=True, blank=True)
+    
+    def __unicode__(self):
+        return self.keywords
+    
+    class Meta:
+        verbose_name = _("Book search")
+        verbose_name_plural = _("Book searches")
         
+    
+    def fetch(self):
+        cnt = 0
+        
+        if not AMAZON_ACCESS_KEY or not AMAZON_SECRET_KEY:
+            return cnt
+    
+        api = amazonproduct.API(AMAZON_ACCESS_KEY, AMAZON_SECRET_KEY, AMAZON_LOCALE)
+        
+        kw = {'ResponseGroup': 'Medium'}
+        kw['Keywords'] = self.keywords
+        kw['AssociateTag'] = AMAZON_ASSOCIATE_TAG
+        if self.browse_node:
+            kw['BrowseNode'] = str(self.browse_node)
+        response = api.item_search('Books', **kw)
+        for item in response.Items.Item:
+            amazon_id = item.ASIN
+            try:
+                Book.objects.get(amazon_id=amazon_id)
+                continue
+            except Book.DoesNotExist:
+                pass 
+            data = get_book_data(item)
+            book = Book(amazon_id=amazon_id)
+            for field_name, value in data.items():
+                if hasattr(book, field_name):
+                    setattr(book, field_name, value)
+            book.save()
+            Category.objects.update_categories(book, self.categories)
+            cnt += 1
+            
+        return cnt
+
+register(BookSearch)

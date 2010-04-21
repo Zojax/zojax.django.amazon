@@ -26,8 +26,7 @@ def item_lookup(amazon_id):
         raise
 
 
-def get_book_data(amazon_id):
-    item = item_lookup(amazon_id)
+def get_book_data(item):
     data = {}
     if item.ItemAttributes.ProductGroup != 'Book':
         raise Exception("This amazon ID does not refer to book product.")

@@ -1,11 +1,13 @@
 from django import forms
 from django.forms.models import ModelForm
 from django.forms.util import ErrorList
-from zojax.django.amazon.models import Book
-from zojax.django.amazon.utils import get_book_data
+from zojax.django.amazon.models import Book, BookSearch
+from zojax.django.amazon.utils import get_book_data, item_lookup
 from zojax.django.categories.forms import CategoriesField
 from zojax.django.categories.models import Category
 import sys
+from zojax.django.location.forms import LocationChoiceField
+from zojax.django.location.models import LocatedItem
 
 
 class BookAddForm(forms.Form):
@@ -18,7 +20,8 @@ class BookAddForm(forms.Form):
         instance = getattr(self, 'instance', None)
         if amazon_id or (instance and instance.amazon_id != amazon_id):
             try:
-                self.cleaned_data.update(get_book_data(amazon_id))
+                item = item_lookup(amazon_id)
+                self.cleaned_data.update(get_book_data(item))
             except Exception:
                 self._errors["amazon_id"] = ErrorList([sys.exc_info()[1]])
                 del self.cleaned_data["amazon_id"]
@@ -68,3 +71,21 @@ class BookAdminForm(ModelForm):
         fields = ('categories', 'amazon_id', 'url', 'title', 'description',
                   'author', 'small_image_url', 'medium_image_url',
                   'large_image_url', 'published')        
+
+
+class BookSearchAdminForm(ModelForm):
+
+    categories = CategoriesField(required=True)
+    location = LocationChoiceField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(BookSearchAdminForm, self).__init__(*args, **kwargs)
+        instance = getattr(self, 'instance', None)
+        if instance and not self.fields['categories'].initial:
+            self.fields['categories'].initial = Category.objects.get_for_object(instance)
+        if instance and not self.fields['location'].initial:
+            self.fields['location'].initial = LocatedItem.objects.get_for_object(instance)
+
+    class Meta:
+        model = BookSearch
+        fields = ('categories', 'keywords', 'browse_node')
