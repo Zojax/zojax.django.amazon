@@ -26,6 +26,7 @@ def item_lookup(amazon_id):
         raise
 
 
+
 def get_book_data(item):
     data = {}
     if item.ItemAttributes.ProductGroup != 'Book':
@@ -37,8 +38,17 @@ def get_book_data(item):
             data['description'] = unicode(r.Content)
             break
     data['author'] = unicode(getattr(item.ItemAttributes, "Author", u''))
-    data['small_image_url'] = unicode(item.SmallImage.URL)  
-    data['medium_image_url'] = unicode(item.MediumImage.URL)  
-    data['large_image_url'] = unicode(item.LargeImage.URL)
+    try:
+        data['small_image_url'] = unicode(item.SmallImage.URL)  
+    except AttributeError:
+        data['small_image_url'] = None
+    try:
+        data['medium_image_url'] = unicode(item.MediumImage.URL)  
+    except AttributeError:
+        data['medium_image_url'] = None
+    try:
+        data['large_image_url'] = unicode(item.LargeImage.URL)
+    except AttributeError:
+        data['large_image_url'] = None
     return data  
     
