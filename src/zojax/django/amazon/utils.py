@@ -33,10 +33,12 @@ def get_book_data(item):
         raise Exception("This amazon ID does not refer to book product.")
     data['url'] = urllib.unquote(unicode(item.DetailPageURL))
     data['title'] = unicode(item.ItemAttributes.Title)
-    for r in item.EditorialReviews.EditorialReview:
-        if r.Source == 'Product Description':
-            data['description'] = unicode(r.Content)
-            break
+    reviews = getattr(item, 'EditorialReviews', None)
+    if reviews is not None:
+        for r in reviews.EditorialReview:
+            if r.Source == 'Product Description':
+                data['description'] = unicode(r.Content)
+                break
     data['author'] = unicode(getattr(item.ItemAttributes, "Author", u''))
     try:
         data['small_image_url'] = unicode(item.SmallImage.URL)  
