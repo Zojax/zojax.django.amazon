@@ -70,7 +70,7 @@ class BookAdminForm(ModelForm):
         model = Book
         fields = ('categories', 'amazon_id', 'url', 'title', 'description',
                   'author', 'small_image_url', 'medium_image_url',
-                  'large_image_url', 'published')        
+                  'large_image_url', 'published', 'sites')        
 
 
 class BookSearchAdminForm(ModelForm):
@@ -88,4 +88,4 @@ class BookSearchAdminForm(ModelForm):
 
     class Meta:
         model = BookSearch
-        fields = ('categories', 'keywords', 'browse_node')
+        fields = ('categories', 'keywords', 'browse_node', 'sites')
