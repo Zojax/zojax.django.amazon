@@ -88,7 +88,10 @@ class BookSearch(models.Model):
                 continue
             except Book.DoesNotExist:
                 pass 
-            data = get_book_data(item)
+            try:
+                data = get_book_data(item)
+            except:
+                continue
             book = Book(amazon_id=amazon_id)
             for field_name, value in data.items():
                 if hasattr(book, field_name):
