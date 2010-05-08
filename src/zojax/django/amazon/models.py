@@ -3,14 +3,12 @@ from django.db.models import permalink
 from django.utils.translation import ugettext_lazy as _
 from zojax.django.amazon.settings import AMAZON_ASSOCIATE_TAG, AMAZON_ACCESS_KEY, \
     AMAZON_SECRET_KEY, AMAZON_LOCALE
+from zojax.django.amazon.utils import get_book_data
 from zojax.django.categories import register
+from zojax.django.categories.models import Category
 from zojax.django.contentitem.models import ContentItem
 import amazonproduct
 import urllib2
-from django.utils.hashcompat import md5_constructor
-from zojax.django.amazon.utils import get_book_data
-from zojax.django.categories.models import Category
-from django.contrib.sites.models import Site
 
 
 class AmazonItem(ContentItem):
@@ -60,7 +58,6 @@ class BookSearch(models.Model):
 
     keywords = models.CharField(max_length=100)
     browse_node = models.IntegerField(null=True, blank=True)
-    sites = models.ManyToManyField(Site, blank=True, related_name='booksearch_sites')
     
     def __unicode__(self):
         return self.keywords
