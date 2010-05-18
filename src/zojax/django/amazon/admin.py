@@ -49,7 +49,6 @@ class BookAdmin(admin.ModelAdmin):
 
     actions = ['publish']
 
-    @csrf_protect
     @transaction.commit_on_success
     def add_view(self, request, form_url='', extra_context=None):
         "The 'add' admin view for book model."
