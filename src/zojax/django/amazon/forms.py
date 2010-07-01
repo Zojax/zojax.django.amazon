@@ -3,7 +3,7 @@ from django.forms.models import ModelForm
 from django.forms.util import ErrorList
 from zojax.django.amazon.models import Book, BookSearch
 from zojax.django.amazon.utils import get_book_data, item_lookup
-from zojax.django.categories.forms import CategoriesField
+from zojax.django.categories.forms import CategoriesAdminField
 from zojax.django.categories.models import Category
 import sys
 from zojax.django.location.forms import LocationChoiceField
@@ -31,7 +31,7 @@ class BookAddForm(forms.Form):
 
 class BookAdminForm(ModelForm):
 
-    categories = CategoriesField(required=True)
+    categories = CategoriesAdminField(required=True)
     
     def __init__(self, *args, **kwargs):
         super(BookAdminForm, self).__init__(*args, **kwargs)
@@ -75,7 +75,7 @@ class BookAdminForm(ModelForm):
 
 class BookSearchAdminForm(ModelForm):
 
-    categories = CategoriesField(required=True)
+    categories = CategoriesAdminField(required=True)
     location = LocationChoiceField(required=False)
 
     def __init__(self, *args, **kwargs):
