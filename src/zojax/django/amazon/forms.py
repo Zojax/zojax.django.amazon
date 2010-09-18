@@ -54,7 +54,8 @@ class BookAdminForm(ModelForm):
         instance = getattr(self, 'instance', None)
         if amazon_id or (instance and instance.amazon_id != amazon_id):
             try:
-                self.cleaned_data.update(get_book_data(amazon_id))
+                item = item_lookup(amazon_id)
+                self.cleaned_data.update(get_book_data(item))
             except Exception:
                 self._errors["amazon_id"] = ErrorList([sys.exc_info()[1]])
                 del self.cleaned_data["amazon_id"]
@@ -70,7 +71,7 @@ class BookAdminForm(ModelForm):
         model = Book
         fields = ('categories', 'amazon_id', 'url', 'title', 'description',
                   'author', 'small_image_url', 'medium_image_url',
-                  'large_image_url', 'published', )        
+                  'large_image_url', 'published',)        
 
 
 class BookSearchAdminForm(ModelForm):
@@ -88,4 +89,4 @@ class BookSearchAdminForm(ModelForm):
 
     class Meta:
         model = BookSearch
-        fields = ('categories', 'keywords', 'browse_node', )
+        fields = ('categories', 'keywords', 'browse_node',)
