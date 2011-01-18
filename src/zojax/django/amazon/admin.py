@@ -31,7 +31,8 @@ class BookAdmin(admin.ModelAdmin):
             (None, {
                 'fields': ('amazon_id', 'url', 'title', 'author', 'description',
                            'small_image_url', 'medium_image_url', 'large_image_url',
-                           'published',)
+                           'published',
+                           'sites')
             }),
         )
 
@@ -105,7 +106,7 @@ class BookSearchAdmin(admin.ModelAdmin):
                 'fields': ('location',)
             }),
             (None, {
-                'fields': ('keywords', 'browse_node', )
+                'fields': ('keywords', 'browse_node', 'sites')
             }),
         )
 
