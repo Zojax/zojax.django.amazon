@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 from zojax.django.amazon.settings import AMAZON_ASSOCIATE_TAG, AMAZON_ACCESS_KEY, \
     AMAZON_SECRET_KEY, AMAZON_LOCALE
 from zojax.django.categories import register
-from zojax.django.contentitem.models import ContentItem
+from zojax.django.contentitem.models import ContentItem, CurrentSiteModelMixin
 import amazonproduct
 import urllib2
 from django.utils.hashcompat import md5_constructor
@@ -56,7 +56,7 @@ class Book(AmazonItem):
 register(Book)
 
 
-class BookSearch(models.Model):
+class BookSearch(CurrentSiteModelMixin):
 
     keywords = models.CharField(max_length=100)
     browse_node = models.IntegerField(null=True, blank=True)
@@ -83,6 +83,8 @@ class BookSearch(models.Model):
         if self.browse_node:
             kw['BrowseNode'] = str(self.browse_node)
         response = api.item_search('Books', **kw)
+        
+        sites = list(self.sites.all())
         for item in response.Items.Item:
             amazon_id = item.ASIN
             try:
@@ -98,6 +100,8 @@ class BookSearch(models.Model):
             for field_name, value in data.items():
                 if hasattr(book, field_name):
                     setattr(book, field_name, value)
+            book.save()
+            map(book.sites.add, sites)
             book.save()
             Category.objects.update_categories(book, self.categories)
             cnt += 1
